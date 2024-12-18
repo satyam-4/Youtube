@@ -48,9 +48,9 @@ const userSchema = new Schema({
 
 // pre is a function that is available on schemas and this function is used to write middlewares, this function takes 2 parameters, first the hook or middleware type that specifies the lifecycle event of the model on which the middleware will be triggered.
 // this will encrypt the password before saving it in the database
-userSchema.pre("save", function(next) {
+userSchema.pre("save", async function(next) {
     if(!this.isModified("password")) return next()
-    this.password = bcrypt.hash(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 

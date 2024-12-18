@@ -5,7 +5,7 @@ import fs from "fs"
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_key: process.env.CLOUDINARY_API_SECRET
+    api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
 const uploadOnCloudinary = async (localFilePath) => {
@@ -21,6 +21,7 @@ const uploadOnCloudinary = async (localFilePath) => {
         return response 
     } catch (error) {
         // cloudinary par upload krne se pehle humne uss file ko server per temporarily store kiya tha, ab file upload toh fail ho gaya lekin file abhi bhi server par toh hai, toh pehele usey server se bhi hatao
+        console.log("Error while uploading the file", error)
         fs.unlinkSync(localFilePath)
         return null
     }

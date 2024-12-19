@@ -46,7 +46,12 @@ const registerUser = asyncHandler( async (req, res) => {
     // iss function (registerUser) ke execution se pehele ek middleware chala hai multer wala, vo req me files ko bhi add krta hai
     // toh jaise express hume req me body ka access provide krta hai, multer ne req me he files bhi add krdiya, aur ye files vahi hai jinhe humne frontend se bheja tha
     const avatarLocalPath = req.files?.avatar[0]?.path  // console log req.files then it will make sense
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path
+
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
     // avatar is required
     if(!avatarLocalPath) {

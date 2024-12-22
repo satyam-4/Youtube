@@ -4,6 +4,21 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
+const generateAccessAndRefreshToken = async(userId) => {
+    try {
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+    
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })
+    
+        return { accessToken, refreshToken }
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating access and refresh tokens")
+    }
+} 
+
 const registerUser = asyncHandler( async (req, res) => {
     // steps to register a new user:
     // 1. get user details from frontend
@@ -95,4 +110,111 @@ const registerUser = asyncHandler( async (req, res) => {
     )
 } )
 
-export { registerUser }
+const loginUser = asyncHandler( async (req, res) => {
+    // steps to login an existing user
+    // 1. get user details like username, email and password
+    // 2. find the user based on it's username or email -> we will find by both
+    // 3. check if password is correct
+    // 4. create access and refresh token if everything is fine
+    // 5. give error response on incorrect credentials
+
+    // get the user credentials 
+    const { username, email, password } = req.body
+
+    // find the user
+    const user = await User.findOne({
+        $or: [{ username }, { email }]  // get the user if it exist by it's username or email
+    })
+
+
+    // check if user exist
+    if(!user) {
+        throw new ApiError(404, "User does not exist")
+    }
+
+    // console.log(user instanceof User)
+    
+    // check password
+    const isPasswordValid = await user.isPasswordCorrect(password)
+    if(!isPasswordValid) {
+        throw new ApiError(401, "Incorrect Password")
+    }
+
+    // generate access and refresh token
+    // const accessToken = user.generateAccessToken()
+    // const refreshToken = user.generateRefreshToken()
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
+
+    // console.log(accessToken)
+    // console.log(refreshToken)
+
+    const loggedInUser = await User.findById(user._id)  // loggedInUser will contain refreshToken field, earlier user object will not contain that field
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+        maxAge: 20000
+    }
+
+    // store these tokens in cookie
+    return res
+    .status(200)
+    .cookie("access_token", accessToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 20000
+    })
+    .cookie("refresh_token", refreshToken, options)
+    .json(
+        new ApiResponse(
+            // status code
+            200,  
+            // data
+            {
+                loggedInUser,
+                accessToken,
+                refreshToken
+            },
+            // mssg
+            "User Logged In Successfully"
+        )
+    )
+} )
+
+const logoutUser = asyncHandler( async (req, res) => {
+    // console.log(req.user)
+    
+    // find and update the refreshToken field of the user, set it to undefined
+    await User.findByIdAndUpdate(
+        // the document _id that to be updated
+        req.user._id,
+
+        // the field that to be updated 
+        {
+            $set: {  // ye mongodb ka operator hai jo object leta hai containing fields and updated values
+                refreshToken: undefined
+            }
+        },
+
+        // this method also returns the document, by default it returns the old doc, but setting new to true, it will return the updated doc, btw we are not going to store it 
+        {
+            new: true
+        }
+    )
+
+    // clear the tokens stored in cookies
+    const options = {
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+    .status(200)
+    .clearCookie("access_token", options)
+    .clearCookie("refresh_token", options)
+    .json(
+        new ApiResponse(200, {}, "User logged out successfully")
+    )
+} )
+
+export { registerUser, loginUser, logoutUser }

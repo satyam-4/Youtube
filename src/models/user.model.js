@@ -55,13 +55,15 @@ userSchema.pre("save", async function(next) {
 })
 
 // method to check the password correct or not
+// iss method ko jo password pass karoge, uss password ko ye hashed password se compare krega
 userSchema.methods.isPasswordCorrect = async function(password) {
+    console.log(this)
     return await bcrypt.compare(password, this.password)
 }
 
 // method to generate jwt access token
 userSchema.methods.generateAccessToken = function() {
-    jwt.sign(
+    return jwt.sign(
         // payloads
         {
             _id: this._id,
@@ -79,7 +81,7 @@ userSchema.methods.generateAccessToken = function() {
 
 // method to generate jwt refresh token
 userSchema.methods.generateRefreshToken = function() {
-    jwt.sign(
+    return jwt.sign(
         // payloads
         {
             _id: this._id,

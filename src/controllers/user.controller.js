@@ -307,4 +307,22 @@ const changeCurrentPassword = asyncHandler( async (req, res) => {
     )
 } )
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword }
+// to get the current user
+const getCurrentUser = asyncHandler( async (req, res) => {
+    // we will ensure that user is logged in before we get the user, so we'll run auth middleware that injects the some user details in the request object
+
+    const user = await User.findById(req?.user._id).select(
+        "-password -refreshToken"
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user
+        )
+    )
+} )
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser }

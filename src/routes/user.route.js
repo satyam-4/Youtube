@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { loginUser, registerUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateUserAvatar } from "../controllers/user.controller.js"
+import { loginUser, registerUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateUserAvatar, updateUserCoverImage } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js"
 
@@ -32,6 +32,10 @@ router.route("/updateUserAvatar").post(
     verifyJWT,  // 1st middleware for authentication
     upload.single("avatar"),  // 2nd middleware to inject the avatar file in request object, as we only want to inject one file not more than that, we use single method instead of fields
     updateUserAvatar  // route handler
+)
+router.route("/updateUserCoverImage").post(
+    upload.single("coverImage"),
+    updateUserCoverImage
 )
 
 

@@ -217,4 +217,52 @@ const logoutUser = asyncHandler( async (req, res) => {
     )
 } )
 
-export { registerUser, loginUser, logoutUser }
+const refreshAccessToken = asyncHandler( async (req, res) => {
+    // steps and working of this function to generate access and refresh token
+    // 1. get the refresh token from cookies, this is the same token that was stored in db while login
+    // 2. decode the token and get _id, now you can find the user by it's _id
+    // 3. check if the refresh token coming from request and the stored one db are same or not, if equal then proceed
+    // 4. generate new access and refresh token
+    // 5. replace the newely generated refresh token from the old one
+    const incomingRefreshToken = req.cookies?.refresh_token
+
+    if(!incomingRefreshToken) {
+        throw new ApiError(401, "Unauthorized request")
+    }
+
+    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    const user = await User.findById(decodedToken?._id)
+
+    // if someone sends incorrect refresh token then user will not found coz you don't get _id, then we throw the below error
+    if(!user) {
+        throw new ApiError(401, "Invalid refresh token")
+    }
+
+    if(incomingRefreshToken !== user.refreshToken) {
+        throw new ApiError(401, "Refresh token is expired or used")
+    }
+
+    const {newAccessToken, newRefreshToken} = await generateAccessAndRefreshToken(user._id)
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+    }
+
+    res
+    .status(200)
+    .cookie("access_token", newAccessToken)
+    .cookie("refresh_token", newRefreshToken)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                newAccessToken,
+                newRefreshToken
+            },
+            "Access token refreshed"
+        )
+    )
+} )
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken }

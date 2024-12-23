@@ -28,7 +28,7 @@ router.route("/login").post(loginUser)
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/refreshAccessToken").post(refreshAccessToken)
 router.route("/changePassword").post(verifyJWT, changeCurrentPassword)
-router.route("/getCurrentUser").post(verifyJWT, getCurrentUser)
+router.route("/getCurrentUser").get(verifyJWT, getCurrentUser)
 
 /*
     "YE SYNTAX SE TUM FAMILIER HO"

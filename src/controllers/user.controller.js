@@ -293,9 +293,10 @@ const changeCurrentPassword = asyncHandler( async (req, res) => {
     // if password is valid then reset the password
     user.password = newPassword
 
+    // user schema me humne ek method banaya hai jo hr baar save hone se pehele chalega and if password is modified before saving then it will hash the pasword before saving it to db
     await user.save()
 
-    res
+    return res
     .status(200)
     .json(
         new ApiResponse(

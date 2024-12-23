@@ -320,7 +320,59 @@ const getCurrentUser = asyncHandler( async (req, res) => {
     .json(
         new ApiResponse(
             200,
-            user
+            user,
+            "Current user fetched successfully"
+        )
+    )
+} )
+
+// to update user avatar
+const updateUserAvatar = asyncHandler( async (req, res) => {
+    // to update the avatar we have to ensure user is logged in -> runs jwtVerify middleware
+    // also we want the new avatar file, so multer middleware will also run before this controller
+
+    // steps to update the avatar
+    // 1. find the user
+    // 2. check if avatar file is send in request
+    // 3. update the avatar
+
+    const avatarLocalPath = req.file?.path
+
+    if(!avatarLocalPath) {
+        throw new ApiError(400, "Avatar file is missing")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+ 
+    if(!avatar.url) {
+        throw new ApiError(400, "Error while uploading avatar")
+    }
+
+    // at this point you have uploaded the avatar on cloudinary and you have access to the url, now you have to update the avatar url stored in db
+
+    // find the user and 
+    const user = await User.findByIdAndUpdate(
+        // _id of the user
+        req.user?._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {
+            new: true
+        }
+    ).select(
+        "-password -refreshToken"
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "Avatar updated successfully"
         )
     )
 } )
@@ -331,5 +383,6 @@ export {
     logoutUser, 
     refreshAccessToken, 
     changeCurrentPassword, 
-    getCurrentUser 
+    getCurrentUser,
+    updateUserAvatar
 }

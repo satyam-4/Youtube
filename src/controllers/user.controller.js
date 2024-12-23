@@ -19,6 +19,7 @@ const generateAccessAndRefreshToken = async(userId) => {
     }
 } 
 
+// to register user
 const registerUser = asyncHandler( async (req, res) => {
     // steps to register a new user:
     // 1. get user details from frontend
@@ -110,6 +111,7 @@ const registerUser = asyncHandler( async (req, res) => {
     )
 } )
 
+// to login user
 const loginUser = asyncHandler( async (req, res) => {
     // steps to login an existing user
     // 1. get user details like username, email and password
@@ -181,6 +183,7 @@ const loginUser = asyncHandler( async (req, res) => {
     )
 } )
 
+// to logout user
 const logoutUser = asyncHandler( async (req, res) => {
     // console.log(req.user)
     
@@ -217,6 +220,7 @@ const logoutUser = asyncHandler( async (req, res) => {
     )
 } )
 
+// to refresh the access token of a user
 const refreshAccessToken = asyncHandler( async (req, res) => {
     // steps and working of this function to generate access and refresh token
     // 1. get the refresh token from cookies, this is the same token that was stored in db while login
@@ -265,4 +269,41 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
     )
 } )
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken }
+// to change the password of a user
+const changeCurrentPassword = asyncHandler( async (req, res) => {
+    // steps to change the password
+    // 0. we will run the auth middleware before running this function, to make sure user is logged in before changing the password, that middleware will add user in request object, now i can find the user by it's _id
+    // 1. take both old and new password from user
+    // 2. if old password is correct (check from db), then change it with new password
+
+    // take old and new password from request body
+    const {oldPassword, newPassword} = req.body
+
+    // find the user
+    const user = await User.findById(req.user?._id)
+
+    // as we have saved password in encrypted form in db, we cannot directly match it with the string provided, instead we can use the method that created in user schema to check the password
+    // below method will return true if the oldPassword is correct
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword)
+
+    if(!isPasswordValid) {
+        throw new ApiError(401, "Incorrect Old Password")
+    }
+
+    // if password is valid then reset the password
+    user.password = newPassword
+
+    await user.save()
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Password changed successfully"
+        )
+    )
+} )
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword }

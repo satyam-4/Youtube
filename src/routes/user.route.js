@@ -30,7 +30,7 @@ router.route("/changePassword").post(verifyJWT, changeCurrentPassword)
 router.route("/getCurrentUser").get(verifyJWT, getCurrentUser)
 router.route("/updateUserAvatar").post(
     verifyJWT,  // 1st middleware for authentication
-    upload,  
+    upload.single("avatar"),  // 2nd middleware to inject the avatar file in request object, as we only want to inject one file not more than that, we use single method instead of fields
     updateUserAvatar  // route handler
 )
 

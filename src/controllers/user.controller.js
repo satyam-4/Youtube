@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import fs from "fs"
 
 const generateAccessAndRefreshToken = async(userId) => {
     try {
@@ -82,6 +83,15 @@ const registerUser = asyncHandler( async (req, res) => {
     if(!avatar) {
         throw new ApiError(400, "Avatar is required")
     }
+
+    // after the upload is done, remove the files from server
+    // do it asynchronously, bcoz, it is not something on which upcoming operations depends
+    fs.unlink(avatarLocalPath, (err) => {
+        if(err) console.log(`Failed to delete avatar file: ${err}`)
+    })
+    fs.unlink(coverImageLocalPath, (err) => {
+        if(err) console.log(`Failed to delete cover image file: ${err}`)
+    })
 
     // saare details mill gaye, avatar and coverImage bhi cloudinary par upload ho gaye, ab db me entry krdo
     const user = await User.create({

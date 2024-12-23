@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { loginUser, registerUser, logoutUser, refreshAccessToken, changeCurrentPassword } from "../controllers/user.controller.js"
+import { loginUser, registerUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js"
 
@@ -28,6 +28,7 @@ router.route("/login").post(loginUser)
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/refreshAccessToken").post(refreshAccessToken)
 router.route("/changePassword").post(verifyJWT, changeCurrentPassword)
+router.route("/getCurrentUser").post(verifyJWT, getCurrentUser)
 
 /*
     "YE SYNTAX SE TUM FAMILIER HO"

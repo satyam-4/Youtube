@@ -5,7 +5,7 @@ import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import fs from "fs"
 
-const generateAccessAndRefreshToken = async(userId) => {
+const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
         const accessToken = user.generateAccessToken()
@@ -19,6 +19,14 @@ const generateAccessAndRefreshToken = async(userId) => {
         throw new ApiError(500, "Something went wrong while generating access and refresh tokens")
     }
 } 
+
+const cleanupTempFiles = (filePaths) => {
+    filePaths.forEach(path => {
+        fs.unlink(path, (err) => {
+            if(err) console.log(`Failed to delete file: ${err}`)
+        })
+    })
+}
 
 // to register user
 const registerUser = asyncHandler( async (req, res) => {
@@ -86,12 +94,11 @@ const registerUser = asyncHandler( async (req, res) => {
 
     // after the upload is done, remove the files from server
     // do it asynchronously, bcoz, it is not something on which upcoming operations depends
-    fs.unlink(avatarLocalPath, (err) => {
-        if(err) console.log(`Failed to delete avatar file: ${err}`)
-    })
-    fs.unlink(coverImageLocalPath, (err) => {
-        if(err) console.log(`Failed to delete cover image file: ${err}`)
-    })
+    // pass an error of paths and this function takes each path, and unlink the file asynchronously
+    cleanupTempFiles([
+        avatarLocalPath,
+        coverImageLocalPath
+    ])
 
     // saare details mill gaye, avatar and coverImage bhi cloudinary par upload ho gaye, ab db me entry krdo
     const user = await User.create({

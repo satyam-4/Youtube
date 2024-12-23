@@ -325,4 +325,11 @@ const getCurrentUser = asyncHandler( async (req, res) => {
     )
 } )
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser }
+export { 
+    registerUser,
+    loginUser,
+    logoutUser, 
+    refreshAccessToken, 
+    changeCurrentPassword, 
+    getCurrentUser 
+}

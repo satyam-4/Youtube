@@ -440,6 +440,20 @@ const updateUserCoverImage = asyncHandler( async (req, res) => {
     )
 } )
 
+const getUserChannelProfile = asyncHandler( async (req, res) => {
+    const { username } = req.params
+
+    if(!username?.trim()) {
+        throw new ApiError(400, "Username is missing")
+    }
+
+    const user = await User.find({ username })
+
+    if(!user) {
+        throw new ApiError(400, "User does not exist")
+    }
+} )
+
 export { 
     registerUser,
     loginUser,

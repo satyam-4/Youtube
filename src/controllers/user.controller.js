@@ -62,20 +62,29 @@ const registerUser = asyncHandler( async (req, res) => {
         $or: [{ email }, { username }]
     })
 
-    if(existingUser) {
-        console.log(existingUser)
-        throw new ApiError(409, "User already exists")  // throw the error with status code 409 that means Conflict
-    }
-
     // ab images and avatar ko handle krna hai
     // iss function (registerUser) ke execution se pehele ek middleware chala hai multer wala, vo req me files ko bhi add krta hai
     // toh jaise express hume req me body ka access provide krta hai, multer ne req me he files bhi add krdiya, aur ye files vahi hai jinhe humne frontend se bheja tha
-    const avatarLocalPath = req.files?.avatar[0]?.path  // console log req.files then it will make sense
+    // const avatarLocalPath = req.files?.avatar[0]?.path  // console log req.files then it will make sense
     // const coverImageLocalPath = req.files?.coverImage[0]?.path
 
-    let coverImageLocalPath;
+    let avatarLocalPath = ""
+    if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0) {
+        avatarLocalPath = req.files.avatar[0].path
+    }
+    
+    let coverImageLocalPath = ""
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
         coverImageLocalPath = req.files.coverImage[0].path
+    }
+
+    if(existingUser) {
+        cleanupTempFiles([
+            avatarLocalPath,
+            coverImageLocalPath
+        ])
+        console.log("Files deleted successfully")
+        throw new ApiError(409, "User already exists")  // throw the error with status code 409 that means Conflict
     }
 
     // avatar is required

@@ -6,7 +6,8 @@ const App = () => {
 
     return (
         <>
-            <Register/>
+            {/* <Register/> */}
+            <Login/>
         </>
     )
 }

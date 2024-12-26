@@ -180,8 +180,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: true,
-        maxAge: 20000
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     }
 
     // store these tokens in cookie
@@ -189,8 +188,7 @@ const loginUser = asyncHandler( async (req, res) => {
     .status(200)
     .cookie("access_token", accessToken, {
         httpOnly: true,
-        secure: true,
-        maxAge: 20000
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
     })
     .cookie("refresh_token", refreshToken, options)
     .json(

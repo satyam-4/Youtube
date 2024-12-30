@@ -244,6 +244,14 @@ const logoutUser = asyncHandler( async (req, res) => {
     )
 } )
 
+const checkUserAuth = asyncHandler( async (req, res) => {
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, {}, "User is authorized")
+    )
+} )
+
 // to refresh the access token of a user
 const refreshAccessToken = asyncHandler( async (req, res) => {
     // steps and working of this function to generate access and refresh token
@@ -279,8 +287,8 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 
     res
     .status(200)
-    .cookie("access_token", newAccessToken)
-    .cookie("refresh_token", newRefreshToken)
+    .cookie("access_token", newAccessToken, options)
+    .cookie("refresh_token", newRefreshToken, options)
     .json(
         new ApiResponse(
             200,
@@ -438,24 +446,25 @@ const updateUserCoverImage = asyncHandler( async (req, res) => {
     )
 } )
 
-const getUserChannelProfile = asyncHandler( async (req, res) => {
-    const { username } = req.params
+// const getUserChannelProfile = asyncHandler( async (req, res) => {
+//     const { username } = req.params
 
-    if(!username?.trim()) {
-        throw new ApiError(400, "Username is missing")
-    }
+//     if(!username?.trim()) {
+//         throw new ApiError(400, "Username is missing")
+//     }
 
-    const user = await User.find({ username })
+//     const user = await User.find({ username })
 
-    if(!user) {
-        throw new ApiError(400, "User does not exist")
-    }
-} )
+//     if(!user) {
+//         throw new ApiError(400, "User does not exist")
+//     }
+// } )
 
 export { 
     registerUser,
     loginUser,
     logoutUser, 
+    checkUserAuth,
     refreshAccessToken, 
     changeCurrentPassword, 
     getCurrentUser,
